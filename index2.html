@@ -3,138 +3,209 @@
 <html>
  
 <head>
+<link rel="stylesheet" type="text/css" href="cd/copperdollar.css">
  
-    <title>Take or select photo(s) and upload</title>
+    <title>Copperdollar</title>
  
     <script type="text/javascript">
  
-      function fileSelected() {
+	function doMessage()
+	{
+		document.getElementById('prepare').style.display = 'block';
+		document.getElementById('uploadmessage').innerHTML = ' Now upload your photo ';
+
+	}
+ 
+	function fileSelected() 
+	{
+		document.getElementById('prepare').style.display = 'none';
  
         var count = document.getElementById('fileToUpload').files.length;
  
-              document.getElementById('details').innerHTML = "";
+		var file = document.getElementById('fileToUpload').files[0];
+
+		var fileSize = 0;
+
+		if (file.size > 1024 * 1024)
+			fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+		else
+			fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
  
-              for (var index = 0; index < count; index ++)
+ 		document.getElementById('prepare').style.display = 'none';
+ 		document.getElementById('sizeit').innerHTML = "(" + fileSize + ")";
+		document.getElementById('updoaddiv').style.display = 'block';
+
+		var fileis = document.getElementById('fileToUpload').files[0];
+		
+		var reader = new FileReader();
+		reader.onload = function()
+		{
+			var output = document.getElementById('picturebackground');
+			output.src = URL.createObjectURL(fileis);
+			
+			output.onload = function()
+			{
+				document.getElementById('picturetestdiv').style.display = 'block';
+				
+				var h = getOffset(document.getElementById('updoaddiv') ).top;
+				h = h + 200;
+				
+				document.getElementById('pictureforeground').style.top = h + "px";
+				document.getElementById('picturebackground').style.top = h + "px";				
+				
+			
+				var w = this.width;
+				var h = this.height;
+				if(w<h)
+					document.getElementById('pictureforeground').src = "cd/maskP.png";
+				else
+					document.getElementById('pictureforeground').src = "cd/mask.png";
+					
+				document.getElementById('pictureforeground').style.width = '50%';
+				document.getElementById('picturebackground').style.width = '50%';
+
+				
+				
+			}
+		};
+		reader.readAsDataURL(fileis);
+	}
+	
+	function getOffset( el ) 
+	{
+		var _x = 0;
+		var _y = 0;
+		while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) 
+		{
+			_x += el.offsetLeft - el.scrollLeft;
+			_y += el.offsetTop - el.scrollTop;
+			el = el.offsetParent;
+		}
+		return { top: _y, left: _x };
+	}
  
-              {
- 
-                     var file = document.getElementById('fileToUpload').files[index];
- 
-                     var fileSize = 0;
- 
-                     if (file.size > 1024 * 1024)
- 
-                            fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
- 
-                     else
- 
-                            fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
- 
-                     document.getElementById('details').innerHTML += 'Name: ' + file.name + '<br>Size: ' + fileSize + '<br>Type: ' + file.type;
- 
-                     document.getElementById('details').innerHTML += '<p>';
- 
-              }
- 
-      }
- 
-      function uploadFile() {
- 
+	function uploadFile() 
+	{
         var fd = new FormData();
  
-              var count = document.getElementById('fileToUpload').files.length;
- 
-              for (var index = 0; index < count; index ++)
- 
-              {
- 
-                     var file = document.getElementById('fileToUpload').files[index];
- 
-                     fd.append('myFile', file);
- 
-              }
+		var count = document.getElementById('fileToUpload').files.length;
+
+		document.getElementById('fileToUpload').files[0].name = "photo1.jpg";
+		
+		var file = document.getElementById('fileToUpload').files[0];
+
+		fd.append('myFile', file);
  
         var xhr = new XMLHttpRequest();
  
         xhr.upload.addEventListener("progress", uploadProgress, false);
- 
+		
         xhr.addEventListener("load", uploadComplete, false);
  
         xhr.addEventListener("error", uploadFailed, false);
  
         xhr.addEventListener("abort", uploadCanceled, false);
  
-        xhr.open("POST", "savetofile.php");
+        xhr.open("POST", "cd/savetofile.php");
  
         xhr.send(fd);
  
-      }
+	}
  
-      function uploadProgress(evt) {
+	function uploadProgress(evt) 
+	{
+
+		if (evt.lengthComputable) 
+		{
+			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+			document.getElementById('uploadmessage').innerHTML = percentComplete.toString() + '%';
+			document.getElementById('prepare').style.display = 'none';
+		}
+		else 
+		{
+			document.getElementById('uploadmessage').innerHTML = 'unable to compute';
+			document.getElementById('prepare').style.display = 'none';
+		}
+
+	}
  
-        if (evt.lengthComputable) {
- 
-          var percentComplete = Math.round(evt.loaded * 100 / evt.total);
- 
-          document.getElementById('progress').innerHTML = percentComplete.toString() + '%';
- 
-        }
- 
-        else {
- 
-          document.getElementById('progress').innerHTML = 'unable to compute';
- 
-        }
- 
-      }
- 
-      function uploadComplete(evt) {
- 
+    function uploadComplete(evt) 
+	{
         /* This event is raised when the server send back a response */
- 
         alert(evt.target.responseText);
  
-      }
+		document.getElementById('updoaddiv').style.display = 'none';
+		document.getElementById('prepare').style.display = 'none';
+		document.getElementById('uploadmessage').innerHTML = ' Now upload your photo ';
+		document.getElementById('picturetestdiv').style.display = 'none';
+	}
  
-      function uploadFailed(evt) {
- 
+	function uploadFailed(evt) 
+	{
         alert("There was an error attempting to upload the file.");
+		document.getElementById('progress').innerHTML = '';
+  		document.getElementById('prepare').style.display = 'none';
+		document.getElementById('picturetestdiv').style.display = 'none';
+	}
  
-      }
- 
-      function uploadCanceled(evt) {
- 
+    function uploadCanceled(evt) 
+	{
         alert("The upload has been canceled by the user or the browser dropped the connection.");
- 
-      }
+		document.getElementById('progress').innerHTML = '';
+  		document.getElementById('prepare').style.display = 'none';
+		document.getElementById('picturetestdiv').style.display = 'none';
+	}
+	
+	function bodyLoaded()
+	{
+		var height = document.body.clientHeight;
+		var width = document.body.clientWidth;
+		
+		document.getElementById('pictureforeground').style.top = width + "px";
+		document.getElementById('picturebackground').style.top = width + "px";
+	}
  
     </script>
- 
+
 </head>
  
-<body>
- 
+<body onload="bodyLoaded()">
+<div align="center">
+  <img width="80%" src="cd/copperdollar_logo.jpg" alt="Copperdollar">
+</div>
+  <p></p>
+  
+  </br>
+  
   <form id="form1" enctype="multipart/form-data" method="post" action="Upload.aspx">
  
     <div>
+	<h1>
+      <label id="fonted" for="fileToUpload"><img id="photobutimage"></img> Take photo or select photo</label><br />
+      <input onclick="doMessage()" type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();" accept="image/*" capture="camera" style="display:none" />
+    </h1>
+	</div>
  
-      <label for="fileToUpload">Take or select photo(s)</label><br />
- 
-      <input type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();" accept="image/*" capture="camera" />
+ <!--   <div id="details"></div>	-->
+	</br>
+    <div id="updoaddiv" style="display:none">
+	<h1>
+       <input type="button" onclick="uploadFile()" value="Upload" class="button-upload"/>
+       <label id="fonted"><div id="uploadmessage" class="upload"> Now upload your photo </div><div id="sizeit"></div></label>
+	</h1>
  
     </div>
+     <div style="display:none" id="prepare">Preparing...</div>
+	</h1>
  
-    <div id="details"></div>
- 
-    <div>
- 
-      <input type="button" onclick="uploadFile()" value="Upload" />
- 
-    </div>
- 
-    <div id="progress"></div>
+ 	<div id="picturetestdiv" style="display:none">
+	<img id="picturebackground" class="backgroundPhoto"/>
+	<img id="pictureforeground" src="cd/mask.png" class="foregroundMask" />
+	</div>
  
   </form>
+ 
+
  
 </body>
  
