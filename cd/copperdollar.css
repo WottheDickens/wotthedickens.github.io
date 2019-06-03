@@ -1,0 +1,69 @@
+body {
+    background-color: black;
+	color: red;
+}
+
+
+input.button-upload{
+	background: url("buttonUpload.jpg") no-repeat;
+	background-size: 200px 100px;
+	cursor:pointer;
+	border: none;
+	width: 200px;
+	height: 100px;
+
+}
+
+#progress
+{
+	font-size: 36pt;
+}
+
+#prepare
+{
+	font-size: 36pt;
+}
+
+#photobutimage
+{
+	background: url("buttonPhoto.jpg") no-repeat;
+	background-size: 200px 100px;
+	vertical-align:middle;
+	width:200px;
+	height:100px;
+}
+
+#sizeit
+{
+	vertical-align:middle;
+	font-size: 20pt;
+	display: inline-block;
+	margin: 20px;
+}
+
+.upload
+{
+	vertical-align:middle;
+	font-size: 32pt;
+	display: inline-block;
+}
+
+#fonted
+{
+	font-size: 32pt;
+}
+
+.backgroundPhoto
+	{
+		position:absolute;
+		top: 95%;
+		left: 25%;
+		z-index: 1;
+	}
+.foregroundMask
+	{
+		position:absolute;
+		top: 95%;
+		left: 25%;
+		z-index: 2;
+	}
