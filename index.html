@@ -231,6 +231,18 @@ context.fillRect(0,0,384,640);
 	  	 initialize();
 		SetColour('black');
 		SetPenSize(2);	
+		
+		// try load image from url...
+    var img = new Image;
+    img.src = "https://www.metoffice.gov.uk/public/data/CoreProductCache/BWSurfacePressureChart/Item/ProductId/96518415";
+//	"http://yinoneliraz-001-site1.smarterasp.net/MyPicture.png";
+
+        var ctx = sigCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0,500,675);
+        img = new Image;
+        img.src = "https://www.metoffice.gov.uk/public/data/CoreProductCache/BWSurfacePressureChart/Item/ProductId/96518415";
+		
+		
 	  }
 	  
 	  function ClearDisplay()
