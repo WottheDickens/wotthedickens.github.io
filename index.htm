@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--<meta http-equiv=“Pragma” content=”no-cache”>
+<meta http-equiv=“Expires” content=”-1″>
+<meta http-equiv=“CACHE-CONTROL” content=”NO-CACHE”>
+-->
+
+   
+   <title>ArtFrame</title>
+ 
+   <script type="text/javascript" src="jquery.min.js"></script>
+ 
+   <script type="text/javascript">
+
+      // works out the X, Y position of the click inside the canvas from the X, Y position on the page
+      function getPosition(mouseEvent, sigCanvas) {
+         var x, y;
+         if (mouseEvent.pageX != undefined && mouseEvent.pageY != undefined) {
+            x = mouseEvent.pageX;
+            y = mouseEvent.pageY;
+         } else {
+            x = mouseEvent.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+            y = mouseEvent.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+         }
+ 
+         return { X: x - sigCanvas.offsetLeft, Y: y - sigCanvas.offsetTop };
+      }
+
+	  function actualText(_x,_y)
+	  {
+	  		var sigCanvas = document.getElementById("canvasSignature");
+			var context = sigCanvas.getContext("2d");		
+
+			context.textAlign = "center";	
+		
+			context.font = "bold 18px Arial";
+			context.fillStyle = pencolour;
+					
+			var lines = fragmentText(inputtext, 212 - parseInt(18,0));
+			lines.forEach(function(line, i) 
+			{
+				context.fillText(line, _x, ((i + 0 ) * parseInt(18,0))+_y);
+			});	
+			
+	  }
+
+	  
+      function initialize() {
+         // get references to the canvas element as well as the 2D drawing context
+         var sigCanvas = document.getElementById("canvasSignature");
+         var context = sigCanvas.getContext("2d");
+         context.strokeStyle = 'Black';
+ // fill rect with bg...
+context.fillStyle = "#FFffff";
+context.fillRect(0,0,212,104);
+
+ 
+         // This will be defined on a TOUCH device such as iPad or Android, etc.
+         var is_touch_device = 'ontouchstart' in document.documentElement;
+ 
+         if (is_touch_device) {
+            // create a drawer which tracks touch movements
+            var drawer = {
+               isDrawing: false,
+               touchstart: function (coors) {
+			   
+			   if(dotext)
+			   {
+					dotext=false;
+					actualText(coors.x, coors.y);
+			   }
+			   else
+			   {
+			   
+			    context.lineWidth = pensize;
+
+                  context.beginPath();
+                  context.moveTo(coors.x, coors.y);
+                  this.isDrawing = true;
+			   }
+               },
+               touchmove: function (coors) {
+                  if (this.isDrawing) {
+                     context.lineTo(coors.x, coors.y);
+					 		 context.strokeStyle = pencolour;
+
+                     context.stroke();
+                  }
+               },
+               touchend: function (coors) {
+                  if (this.isDrawing) {
+                     this.touchmove(coors);
+                     this.isDrawing = false;
+                  }
+               }
+            };
+ 
+            // create a function to pass touch events and coordinates to drawer
+            function draw(event) {
+ 
+               // get the touch coordinates.  Using the first touch in case of multi-touch
+               var coors = {
+                  x: event.targetTouches[0].pageX,
+                  y: event.targetTouches[0].pageY
+               };
+ 
+               // Now we need to get the offset of the canvas location
+               var obj = sigCanvas;
+ 
+               if (obj.offsetParent) {
+                  // Every time we find a new object, we add its offsetLeft and offsetTop to curleft and curtop.
+                  do {
+                     coors.x -= obj.offsetLeft;
+                     coors.y -= obj.offsetTop;
+                  }
+				  // The while loop can be "while (obj = obj.offsetParent)" only, which does return null
+				  // when null is passed back, but that creates a warning in some editors (i.e. VS2010).
+                  while ((obj = obj.offsetParent) != null);
+               }
+ 
+               // pass the coordinates to the appropriate handler
+               drawer[event.type](coors);
+            }
+ 
+
+            // attach the touchstart, touchmove, touchend event listeners.
+            sigCanvas.addEventListener('touchstart', draw, false);
+            sigCanvas.addEventListener('touchmove', draw, false);
+            sigCanvas.addEventListener('touchend', draw, false);
+ 
+            // prevent elastic scrolling
+            sigCanvas.addEventListener('touchmove', function (event) {
+               event.preventDefault();
+            }, false); 
+         }
+         else {
+ 
+            // start drawing when the mousedown event fires, and attach handlers to
+            // draw a line to wherever the mouse moves to
+            $("#canvasSignature").mousedown(function (mouseEvent) {
+               var position = getPosition(mouseEvent, sigCanvas);
+ 
+ 			   if(dotext)
+			   {
+					dotext=false;
+					actualText(position.X, position.Y);
+			   }
+				else
+				{
+ 
+ context.lineWidth = pensize;
+ 
+               context.moveTo(position.X, position.Y);
+               context.beginPath();
+ 
+               // attach event handlers
+               $(this).mousemove(function (mouseEvent) {
+                  drawLine(mouseEvent, sigCanvas, context);
+               }).mouseup(function (mouseEvent) {
+                  finishDrawing(mouseEvent, sigCanvas, context);
+               }).mouseout(function (mouseEvent) {
+                  finishDrawing(mouseEvent, sigCanvas, context);
+               });
+			   }
+            });
+ 
+         }
+      }
+      function drawLine(mouseEvent, sigCanvas, context) {
+ 
+         var position = getPosition(mouseEvent, sigCanvas);
+ 
+         context.lineTo(position.X, position.Y);
+		 context.strokeStyle = pencolour;
+         context.stroke();
+      }
+ 
+
+      function finishDrawing(mouseEvent, sigCanvas, context) {
+         // draw the line to the finishing coordinates
+         drawLine(mouseEvent, sigCanvas, context);
+ 
+         context.closePath();
+ 
+         // unbind any events which could draw
+         $(sigCanvas).unbind("mousemove")
+                     .unbind("mouseup")
+                     .unbind("mouseout");
+      }
+	  
+	  var pensize = 1;
+	  function SetPenSize(s)
+	  {
+	    var divid = pensize + "pix";
+		var div = document.getElementById(divid);
+		div.style.background = 'lightgray';
+		div.style.color = 'black';
+		pensize = s;
+		
+	    divid = pensize + "pix";
+		div = document.getElementById(divid);
+		div.style.background = 'green';
+		div.style.color = 'white';
+	  
+	  }
+	  
+	  var pencolour = 'black';
+	  function SetColour(c)
+	  {
+	    var divid = pencolour + "pen";
+		var div = document.getElementById(divid);
+		div.style.background = 'lightgray';
+		div.style.color = 'black';
+		pencolour = c;
+		
+	    divid = pencolour + "pen";
+		div = document.getElementById(divid);
+		div.style.background = c;
+		if(c=='white')
+			div.style.color = 'black';
+		else
+			div.style.color = 'white';
+
+		
+		
+		
+	  }
+	  
+	  function haveLoaded()
+	  {
+	  	 initialize();
+		SetColour('black');
+		SetPenSize(2);	
+	  }
+	  
+	  function ClearDisplay()
+	  {
+		var sigCanvas = document.getElementById("canvasSignature");
+		var context = sigCanvas.getContext("2d");
+		context.strokeStyle = pencolour;
+		 
+		 // fill rect with bg...
+		context.fillStyle = pencolour;
+		context.fillRect(0,0,212,104);
+	  }
+	  
+	  function UploadImage()
+	  {
+         var sigCanvas = document.getElementById("canvasSignature");
+
+
+         var formdata = document.getElementById("imagedata");
+
+
+		var file = toDataURL(sigCanvas);
+
+		 formdata.value = (file);
+
+	  }
+
+	  
+	  function toDataURL(canvas) {		
+
+		var buffer = new Uint8Array(this.toArrayBuffer(canvas));
+
+		
+		return  buffer;
+	}
+
+	  function toArrayBuffer(canvas) {
+
+	  
+		var w = canvas.width, h = canvas.height, w4 = w * 4,
+        idata = canvas.getContext("2d").getImageData(0, 0, w, h),
+        data32 = new Uint32Array(idata.data.buffer), // 32-bit representation of canvas
+		stride = Math.floor((32 * w + 31) / 32) * 4, // row length incl. padding
+		pixelArraySize = stride * h,                 // total bitmap size
+        fileLength = 0 + pixelArraySize,           // header size is known + bitmap
+        pos = 0, x, y = 0, p, s = 0, a, v;
+
+		var file = new ArrayBuffer((data32.length )*1);
+		var view = new DataView(file);                   // handle endian, reg. width etc.
+	  
+		while (y < h) {
+		
+			pos = (y+1) * 212;
+			pos--;
+			x = 0;
+			while (x < w4) {
+				v = data32[s++];                     // get ABGR
+		
+				var r = (v >> (0 << 3)) & 0xFF;
+				var g = (v >> (1 << 3)) & 0xFF;
+				var b = (v >> (2 << 3)) & 0xFF;		
+
+				if(r<70 && g<70 && b<70)
+				{
+					view.setUint8(pos--, 0); // black
+				}
+				else if(r>=70 && g>=70 && b>=70)
+				{
+					view.setUint8(pos--, 1); // white
+				}
+				else
+					view.setUint8(pos--, 2); // red
+				
+				x += 4;
+			}
+			y++
+			pos+=212;
+
+			
+		}
+
+		return file;
+		
+		    function setU8(data) {view.setUint8(pos, data); pos += 1}
+
+	  }	  
+
+	  
+	
+  
+	var inputtext = "";
+	var dotext=false;
+	
+	function DoText()
+	{
+		var text = prompt("Please enter text", "");
+		if (text != null) 
+		{
+			inputtext = text;
+			dotext=true;
+		}  
+	}
+	  
+	function fragmentText(text, maxWidth) {
+			var sigCanvas = document.getElementById("canvasSignature");
+			var ctx = sigCanvas.getContext("2d");		
+		var words = text.split(' '),
+			lines = [],
+			line = "";
+		if (ctx.measureText(text).width < maxWidth) {
+			return [text];
+		}
+		while (words.length > 0) {
+			while (ctx.measureText(words[0]).width >= maxWidth) {
+				var tmp = words[0];
+				words[0] = tmp.slice(0, -1);
+				if (words.length > 1) {
+					words[1] = tmp.slice(-1) + words[1];
+				} else {
+					words.push(tmp.slice(-1));
+				}
+			}
+			if (ctx.measureText(line + words[0]).width < maxWidth) {
+				line += words.shift() + " ";
+			} else {
+				lines.push(line);
+				line = "";
+			}
+			if (words.length === 0) {
+				lines.push(line);
+			}
+		}
+		return lines;
+	}
+	  
+	  
+   </script>
+   <style>
+* {
+  box-sizing: border-box;
+}
+
+/* Create three equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 20;
+  padding: 10px;
+
+}
+.column-nopad
+{
+  padding: 2px;
+}
+
+.column2 {
+  float: left;
+  width: 212;
+  padding: 5px;
+
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+  height: 20;
+}
+
+.nav 
+{ 
+	height: 25%; 
+	width: 100%; 
+	border: 1px solid black; 
+	position: relative; 
+	text-align: center;
+	background: lightgray;
+	color: black;
+	margin: 2px;
+}
+.nav-mini
+{
+	width: 100%; 
+	margin: 0px;
+
+}
+a:link {
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+}
+
+
+.hyperspan
+{
+    background: red;
+    opacity: .3;
+    position:absolute;
+    width:100%;
+    height:100%;
+    left:0;
+    top:0;
+    z-index:1;
+}
+
+.hyperspan-blue
+{
+    background: blue;
+}
+
+.hyperspan-white
+{
+    background: white;
+}
+
+.subbut
+{
+	position:absolute;
+	height:100%;
+    width:100%;
+    left:0;
+    top:0;
+	border: 2px;
+}
+
+</style>
+</head>
+ 
+<body onload="haveLoaded()">
+	<p id="thestart"></p>
+	<p style="text-align:left;"><b>Art Frame</b></p>
+ 
+ <div class="row">
+ <div class="column" style="background-color:#aaa;">
+    <div class="row">
+		<div id="redpen" class="nav" onclick="SetColour('red')" >red
+		 
+			<span class="hyperspan hyperspan-white"></span>
+		   
+		</div>	
+    </div>
+    <div class="row">
+		<div id="blackpen" class="nav" onclick="SetColour('black')">black
+			<span class="hyperspan hyperspan-white"></span>
+		</div>	
+    </div>
+    <div class="row">
+		<div id="whitepen" class="nav" onclick="SetColour('white')">white
+			<span class="hyperspan hyperspan-white"></span>
+
+		</div>	
+    </div>
+    <div class="row">
+		<div id="clear" class="nav" onclick="ClearDisplay()" >Clear
+		 
+			<span class="hyperspan"></span>
+		   
+		</div>	
+    </div>
+    <div class="row">
+		<div class="column column-nopad" style="background-color:#ccc;">
+		
+			<div id="prevImage" class="nav nav-mini" ><a href="prevImage"><<</a>  
+			</div>	
+		</div>	
+		<div class="column column-nopad" style="background-color:#ccc;">
+			<div id="nextImage" class="nav nav-mini" ><a href="nextImage">>></a>
+			</div>	
+		</div>
+	</div>
+    <div class="row">
+			<div id="delImage" class="nav nav-mini" ><a href="delImage">del</a></div>	
+	</div>	
+</div>
+
+ 
+   <div id="canvasDiv" class="column2" >
+		<div class="row">
+			<canvas id="canvasSignature" width="212px" height="104px" style="border:2px solid #000000;"></canvas>
+		</div>
+		<div class="row">
+		<div id="upload" class="nav" > 
+		   <form action="" method="post" enctype="multipart/form-data;" id="form">  
+	<p style="text-align:center;">	   <input type="submit" class="subbut" value="Upload picture to display" onclick="UploadImage()"> </p>
+		   <input type="hidden" id="imagedata" name="imagedata" value="1234">
+		   </form>
+		</div>
+		</div>
+		
+	</div>
+
+  <div class="column" style="background-color:#ccc;">
+  
+
+
+    <div class="row">
+		<div id="1pix" class="nav" onclick="SetPenSize(1)">1pix
+			<span class="hyperspan hyperspan-white"></span>
+		</div>	
+    </div>
+    <div class="row">
+		<div id="2pix" class="nav" onclick="SetPenSize(2)">2pix
+			<span class="hyperspan hyperspan-white"></span>
+		</div>	
+    </div>
+    <div class="row">
+		<div id="5pix" class="nav" onclick="SetPenSize(5)">5pix
+			<span class="hyperspan hyperspan-white"></span>
+		</div>	
+    </div>
+    <div class="row">
+		<div id="10pix" class="nav" onclick="SetPenSize(10)">10pix
+			<span class="hyperspan hyperspan-white"></span>
+		</div>	
+    </div>
+    <div class="row">
+		<div id="text" class="nav" onclick="DoText()">Text
+			<span class="hyperspan hyperspan-blue"></span>
+		</div>	
+    </div>
+  
+  </div>
+   
+</div>
+   
+   
+ </body></html>

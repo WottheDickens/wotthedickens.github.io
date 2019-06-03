@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+	$('#firstname').keyup(function() {
+		alert("test");
+	} );
+
+
+});
+	
+$(document).on("click", "#firstname", function (e) {
+		alert("test");
+});
+
+$("firstname").change(function () {
+
+		alert("test");
+
+});
+
+
+</script>
+</head>
+<body>
+
+<h2>Text field</h2>
+<p>The <strong>input type="text"</strong> defines a one-line text input field:</p>
+
+<form action="/action_page.php">
+First name:<br>
+<input type="button" id="firstname">
+
+<br><br>
+
+<input type="submit">
+</form>
+
+<p>Note that the form itself is not visible.</p>
+<p>Also note that the default width of a text field is 20 characters.</p>
+
+</body>
+</html>
