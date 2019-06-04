@@ -67,7 +67,7 @@ function uploadFiles(files, commitTitle) {
                   return gitHub.saveFile({
                      repository: gitHub.repository,
                      branchName: config.branchName,
-                     filename: "/blob/master/" + file.filename,
+                     filename: "blob/master/" + file.filename,
                      content: file.content,
                      commitTitle: commitTitle
                   });
