@@ -15,8 +15,58 @@
    
    
    //
-   
-   
+   	function doMessage()
+	{
+//alert("mssage");
+	}
+
+	function fileSelected() 
+	{
+		var count = document.getElementById('fileToUpload').files.length;
+
+		var file = document.getElementById('fileToUpload').files[0];
+
+		var fileSize = 0;
+
+		if (file.size > 1024 * 1024)
+			fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+		else
+			fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+
+
+		var fileis = document.getElementById('fileToUpload').files[0];
+
+		var sigCanvas = document.getElementById("canvasSignature");
+		var context = sigCanvas.getContext("2d");
+		context.strokeStyle = 'Black';
+		// fill rect with bg...
+//		context.fillStyle = "#FF0fff";
+		context.fillRect(0,0,384,640);		
+		var reader = new FileReader();
+		reader.onload = function()
+		{
+//			var output = document.getElementById('picturebackground');
+//			output.src = URL.createObjectURL(fileis);
+
+			var output = new Image;
+			output.src = URL.createObjectURL(fileis);
+
+			
+			output.onload = function()
+			{
+				var sigCanvas = document.getElementById("canvasSignature");
+				var context = sigCanvas.getContext("2d");
+
+				context.strokeStyle = 'Black';
+				// fill rect with bg...
+				context.drawImage(output, 0, 0,output.width,output.height);
+
+				
+				
+			}
+		};
+		reader.readAsDataURL(fileis);
+	}   
    
    
    
@@ -473,7 +523,7 @@ a:visited {
 
 .subbut
 {
-	position:absolute;
+	position:relative;
 	height:100%;
     width:100%;
     left:0;
@@ -526,10 +576,12 @@ a:visited {
 			</div>	
 		</div>
 	</div>
+ 
     <div class="row">
-			<div id="photo" class="nav nav-mini" ><a href="index2.html">Pick photo</a></div>	
+		<br><br>
 	</div>	
     <div class="row">
+			<div id="testPage" class="nav nav-mini" ><a href="indexgit.html">gitup</a></div>	
 	</div>	
     <div class="row">
 			<div id="delImage" class="nav nav-mini" ><a href="delImage">del</a></div>	
@@ -542,9 +594,19 @@ a:visited {
 			<canvas id="canvasSignature" width="384px" height="640px" style="border:2px solid #000000;"></canvas>
 		</div>
 		<div class="row">
-		<div id="upload" class="nav" > 
+		<div id="upload" class="nava" > 
 		   <form action="" method="post" enctype="multipart/form-data;" id="form">  
-	<p style="text-align:center;">	   <input type="submit" class="subbut" value="Upload picture to display" onclick="UploadImage()"> </p>
+		   
+		   
+		   
+				<input id="fileToUpload" onclick="doMessage()" type="file"  value="Pic pix" onclick="UploadImage()" class="subbut" name="fileToUpload" onchange="fileSelected();" accept="image/*" capture="camera">
+<!--      <input  id="fileToUpload" style="display:none" />	!-->
+
+		   
+		   
+		   
+		   
+			<input type="submit"  value="Upload picture to display" onclick="UploadImage()"> </p>
 		   <input type="hidden" id="imagedata" name="imagedata" value="1234">
 		   </form>
 		</div>
