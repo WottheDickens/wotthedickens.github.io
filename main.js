@@ -1,6 +1,6 @@
 'use strict';
 
-var GitHub = require('github-api');
+var GitHub = require('./github');
 var config = {
    username: 'WottheDickens',
    password: 'ArtFram3', // Either your password or an authentication token if two-factor authentication is enabled
